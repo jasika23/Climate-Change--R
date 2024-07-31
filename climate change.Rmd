@@ -1,0 +1,593 @@
+---
+title: "Time Series Assignment 2"
+author: "Jasika Verma"
+date: "2024-04-30"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(readr)
+library(lmtest)
+library(TSA)
+library(forecast)
+library(tseries)
+library(knitr)
+
+setwd("~/Desktop/time series analysis ")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# INTRODUCTION
+
+Climate change is one of the most pressing challenges facing humanity today, with significant implications for ecosystems, economies, and societies worldwide. Understanding the patterns and trends of global temperature anomalies is essential for comprehending the impacts of climate change and informing mitigation and adaptation efforts. Time series analysis techniques, such as ARIMA modeling, provide valuable tools for analyzing and forecasting temperature anomalies, facilitating informed decision-making in climate science and policy.
+
+This assignment focuses on the analysis of yearly Global Land Temperature Anomalies, spanning from 1850 to 2023, against a reference period of 1901-2000. The dataset, sourced from the NOAA National Centers for Environmental Information, offers a rich opportunity to explore temporal patterns and potentially model future temperature variations. By applying ARIMA modeling techniques, we aim to identify suitable models for capturing the underlying dynamics of temperature anomalies and making reliable forecasts.
+
+## **AIM**
+
+The primary aim of this assignment is to conduct a comprehensive analysis of the Global Land Temperature Anomalies dataset and develop ARIMA models for forecasting future temperature variations. Specific objectives include:
+
+1.  **Descriptive Analysis**: Conduct descriptive analysis of the temperature anomalies dataset to characterize its temporal patterns, trends, and variability.
+
+2.  **Model Specification**: Utilize Autocorrelation Function (ACF), Partial Autocorrelation Function (PACF), and other model specification tools to propose a set of possible ARIMA models, considering different combinations of autoregressive (AR) and moving average (MA) orders.
+
+3.  **Parameter Estimation:** Fit the proposed ARIMA models to the data and estimate the model parameters using maximum likelihood estimation or other suitable methods.
+
+4.  **Model Evaluation:** Evaluate the goodness of fit of each ARIMA model using diagnostic tools such as AIC, BIC, and residual analysis. Identify the best-fitting model based on these criteria.
+
+## METHOD
+
+-   **Data Import and Preprocessing**:
+
+    -   The dataset "assignment2Data2024.csv" is read into R using the **`read_csv()`** function from the **`readr`** package.
+
+    -   The data is converted into a time series object using the **`ts()`** function.
+
+-   **Descriptive Analysis**:
+
+    -   A time series plot is created to visualize the temperature anomaly data over time.
+
+    -   A scatter plot is generated to explore the relationship between each data point and the temperature anomaly from the previous year.
+
+-   **Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) Analysis**:
+
+    -   ACF and PACF plots are created to examine the autocorrelation and partial autocorrelation of the temperature anomaly series.
+
+-   **Unit Root Test**:
+
+    -   The Augmented Dickey-Fuller (ADF) test is performed to assess the stationarity of the data. The result indicates that the data is non-stationary.
+
+-   **Normality Test**:
+
+    -   The Shapiro-Wilk test is conducted to assess the normality of the data. The test suggests that the data is not normally distributed.
+
+-   **Box-Cox Transformation**:
+
+    -   To address non-normality and non-stationarity, the Box-Cox transformation is applied to the data. Lambda is estimated, and the transformation is performed.
+
+-   **Differencing**:
+
+    -   The first difference of the data is calculated to make it stationary. A time series plot and ACF/PACF plots of the differenced data are generated.
+
+-   **ARIMA Model Selection**:
+
+    -   The Extended Autocorrelation Function (EACF) is used to identify potential ARIMA models.
+
+    -   The **`armasubsets()`** function is used to explore different ARIMA model specifications based on Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC) values
+
+### Use of Artificial- Intelligence
+
+Artifical tools like chatgpt and quillbot were used to help me capture my observations and report them using gramatically correct English in a formal manner.
+
+They also helped me understand some testings like the ML and CSS for ARIMA model selection.
+
+### READING THE DATA
+
+The dataset given to us by RMIT university is saved as assignment2Data2024 as a csv file in the current working directory. The data frame has 174 observations and 2 variables which are saved as Year and Anomaly.
+
+```{r}
+assignment2Data2024 <- read_csv("assignment2Data2024.csv", show_col_types = FALSE)
+head(assignment2Data2024)
+```
+
+We now check the datatype of our Dataset and convert it to time series.
+
+```{r}
+class(assignment2Data2024)
+```
+
+```{r}
+# we see that the class is data.frame so we need to convert to time series 
+
+ 
+class(data_TS)
+```
+
+## DESCRIPTIVE ANALYSIS
+
+Now that we have converted our Dataset to a time frame, we now perform Descriptive analysis. For this we make a time series plot.
+
+```{r}
+# Descriptive analysis- We make a time series plot 
+
+
+
+```
+
+The Time Series plot fig 1. gives the following descriptive analysis:
+
+1.  **Trend:** We see that there are 2 different trends in fig 2. Up until around Year 1910 the trend is downwards and then after that it remains upwards overall.
+2.  **Seasonality:** Fig 2 does not show any seasonality as there are no apparent repeating patterns that are visible.
+3.  **Changing Variance:** There exists variance in our data as can be seen in fig 2. For some years like around 2002 we see variance in data is less when compared to others.
+4.  **Behavior:** Fig 2 shows Auto Regressive behavior
+5.  **Changing Point:** Around year 1910, we see a change in the trend. It starts going upwards overall. c
+
+We now want to see how every subsequent point is correlated to the previous point. for this we draw a scatter plot (fig 2)
+
+```{r}
+y= data_TS
+x= zlag(data_TS)
+head(y)
+head(x)
+index = 2:length(x)
+cor(y[index],x[index])
+
+```
+
+```{r}
+plot(y=data_TS, x=zlag(data_TS), ylab='Temperature Anomaly', xlab='Temperature Anomaly the Year before', 
+     main = "fig 2. Scatter plot of temperature anomalies when compared to 1901-2001")
+```
+
+from fig 2 and the scatter plot and also the correlation value 0.9399 \~ 0.94 we see that there is a strong correlation between the return values for any two consecutive years.
+
+## **Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) Analysis**
+
+```{r}
+acf(data_TS, main ="Fig 3. ACF plot of Global Land Temperature Anomaly Series")
+
+```
+
+From fig 3 we can see that our ACF decays slowly as Lag increases.
+
+```{r}
+pacf(data_TS, main ="Fig 4.PACF plot of Global Land Temperature Anomaly Series")
+
+```
+
+Studying the Fig 4 we see that there is a spike in the first lag when compared to other lags.
+
+Both these observations from Fig 3 and fig 4 show that our data is non- stationary.
+
+## Unit Root test for Stationarity
+
+```{r}
+adf.test(data_TS)
+```
+
+Since the p-value (0.9044) is greater than the Threshold significance level of 0.05, we fail to reject the null hypothesis of non-stationarity. In other words, there is insufficient evidence to conclude that the time series is stationary and is likely to be non-stationary.
+
+### Phillips--Perron Unit Root Test
+
+```{r}
+pp.test(data_TS, alternative = c("stationary"))
+```
+
+The Phillips-Perron unit root test was conducted on the time series data, yielding a p-value of 0.4258. With a p-value above the conventional significance level of 0.05, we fail to reject the null hypothesis. Therefore, there is insufficient evidence to conclude that the data is stationary. Instead, we lean towards accepting the alternative hypothesis, suggesting that the data is non-stationary.
+
+## Normality Tests
+
+#### QQ Plot
+
+```{r}
+#Normal QQ Plot 
+qqnorm(data_TS, main = "Fig5. Standardised residuals in a QQ plot")
+qqline(data_TS, col = 2)
+
+```
+
+#### Shapiro- Wilk Test
+
+```{r}
+shapiro.test(data_TS)
+```
+
+Fig 5 visually displays how the distribution of the **`data_TS`** dataset compares to a theoretical normal distribution. While the points in the QQ plot generally follow the diagonal reference line, there are deviations observed, indicating that the dataset may not perfectly adhere to a normal distribution.
+
+Additionally, the Shapiro-Wilk test was conducted to formally assess the normality of the data. The test yielded a very low p-value, indicating strong evidence against the null hypothesis of normality. This suggests that the **`data_TS`** dataset significantly deviates from a normal distribution.
+
+The combination of the Fig 5 (QQ plot) showing deviations from the reference line and the Shapiro-Wilk test results suggests that the **`data_TS`** dataset exhibits non-normal behavior. This implies that statistical analyses or models assuming normality may not be appropriate for this dataset. Therefore, alternative methods or adjustments may be necessary to account for the non-normality when analyzing or modeling the **`data_TS`** dataset.
+
+## Box- Cox Transformation
+
+Our data set consists of many negative values which can not be used for Box Cox transformation. For this purpose, we convert all our negative time series values to positive time series values by adding a constant term to all the values prior to conducting the transformation. We add the absolute value of the minimum value of our time series and add a small margin to ensure we have all positive values.
+
+```{r}
+min(data_TS)
+```
+
+```{r}
+data_TS2 <- data_TS + abs(min(data_TS)) + 0.01
+```
+
+Now we perform the Box-Cox Transformation
+
+```{r message=FALSE, warning=FALSE}
+BC <- BoxCox.ar(data_TS2, title = " Fig 6 Box-Cox Transformation Results")
+```
+
+```{r}
+BC$ci
+lambda <- BC$lambda[which(max(BC$loglike) == BC$loglike)]
+lambda
+BC.data_TS2 = (data_TS2^lambda-1)/lambda # apply the Box-Cox transformation
+```
+
+lambda=1, suggests that the Box-Cox transformation does not significantly improve the fit of the model. Specifically, when lambda=1, it means that no transformation is applied to the data, or equivalently, a logarithmic transformation is applied. This is because lambda=1 corresponds to the identity transformation, where the original data is retained without any modification.
+
+Therefore, the interpretation would be that the Box-Cox transformation with lambda=1 does not provide a significant improvement in model fit compared to using the original, untransformed data. In other words, the data does not require transformation to achieve a better fit with the Box-Cox model.
+
+```{r}
+par(mfrow=c(1,1))
+plot(BC.data_TS2,type='o', ylab ="Temp Anomaly", main=" Fig 7 Time series plot of BC transformed temperature anomalies.")
+
+```
+
+Again comparing Fig 7 and Fig 1 we see no difference which means Box-Cox transformation did not significantly alter the pattern or appearance of the time series data, it suggests that the transformation may not have been effective in achieving its intended purpose, such as stabilizing variance or improving normality.
+
+```{r}
+qqnorm(y=BC.data_TS2, main = " Fig 8. QQ plot of BC transformed Temperature Anomalies")
+qqline(y=BC.data_TS2, col = 2, lwd = 1, lty = 2)
+
+```
+
+```{r}
+shapiro.test(BC.data_TS2)
+```
+
+As mentioned earlier and confirmed from Fig 8 and Shapiro wilk test the transformed data is still not normal hence the transformation was not effective we move further with our original time series **`data_TS`**
+
+## DIFFERENCING
+
+Earlier on conducting Unit Root test, we reached to a conclusion that our time series is not stationary. One common technique used to address non-stationarity is differencing. Differencing involves computing the differences between consecutive observations in the time series data. By subtracting each data point from its preceding point, differencing helps remove trends, seasonal effects, and other non-stationary components from the data, making it suitable for modeling with stationary time series techniques.
+
+```{r}
+data.diff <- diff(data_TS)
+par(mfrow=c(1,1))
+plot(data.diff,type='o', ylab ="Gold price", main="Fig 9. Time series plot of the first difference of Temperature Anomalies")
+```
+
+After applying first differencing to the original time series data, the resulting time series plot of the differences Fig 9 appears to fluctuate around a constant mean with relatively constant variance over time. This observation indicates that the first differencing transformation has been successful in achieving stationarity in the data. We will again check the stationarity with the Dicky-Fuller test as done before.
+
+```{r}
+adf.test(data.diff)
+```
+
+```{r}
+pp.test(data.diff, alternative = c("stationary"))
+```
+
+from both the test we see that the p value is (less than ) 0.01 which is less than the threshold 0.05. Hence our differences time series is now Stationary (Confirmed!)
+
+Stationarity is a fundamental requirement for many time series modeling techniques, as it ensures that the statistical properties of the data remain consistent over time, facilitating accurate modeling and forecasting.
+
+```{r}
+#Normal QQ Plot 
+qqnorm(data.diff, main = "Fig10. Standardised residuals in a QQ plot")
+qqline(data.diff, col = 2)
+
+```
+
+```{r}
+shapiro.test(data.diff)
+```
+
+On analyzing fig 10 and shapiro-wilk test value we see that our differences data is now normal. As established earlier the data is also stationary after performing differencing
+
+Since we achieved stationary and normal time series after first differencing our d=1
+
+## ARIMA MODEL SELECTION
+
+#### ACF plot
+
+```{r}
+acf(data.diff, main = " Fig 11. ACF plot of the first 
+    difference of anomaly.")
+```
+
+Examining fig 11 ACF plot we see that there are atleast 3 significant lags
+
+#### PACF plot
+
+```{r}
+pacf(data.diff, main = "Fig 12. PACF plot of the first 
+     difference of anomaly series.")
+```
+
+From fig 12 PACF plot, we see that there are 2 significant lags in PACF
+
+Hence the proposed models are {ARIMA(1,1,1 ), ARIMA(2,1,1), ARIMA(1,1,2), ARIMA(2,1,2), ARIMA(1,1,3), ARIMA(2,1,3)}
+
+#### EACF
+
+```{r}
+eacf(data.diff)
+```
+
+Based on our EACF table the possible models are {ARIMA(0,1,1), ARIMA(0,1,2), ARIMA(1,1,0), ARIMA(1,1,1), ARIMA(1,1,2)}
+
+#### BIC Values.
+
+```{r message=FALSE, warning=FALSE}
+res = armasubsets(y=data.diff,nar=5,nma=5,y.name='p',ar.method='ols')
+plot(res)
+```
+
+From our BIC table the possible models are {ARIMA(2,1,0)}
+
+Now the set of final model becomes {ARIMA(0,1,1), ARIMA(1,1,0), ARIMA(2,1,0), ARIMA(0,1,2), ARIMA(1,1,1), ARIMA(1,1,2), ARIMA(2,1,1), ARIMA(1,1,3), ARIMA(2,1,2), ARIMA(2,1,3)}
+
+Now we will fit the models and find the parameter estimates.
+
+#### ARIMA(0,1,1)
+
+```{r}
+model.011 = arima(data_TS,order=c(0,1,1),method='ML')
+coeftest(model.011)
+
+```
+
+```{r}
+model.011_css <- arima(data_TS, order = c(0, 1, 1), method = 'CSS')
+coeftest(model.011_css)
+```
+
+The ma1 coefficient in the ARIMA(0,1,1) model exhibits marginal significance under both the ML and CSS methods, suggesting that it may have some impact on the model's performance but is not statistically significant at the conventional level of 0.05.
+
+#### ARIMA(1,1,0)
+
+```{r}
+model.110 = arima(data_TS,order=c(1,1,0),method='ML')
+coeftest(model.110)
+
+```
+
+```{r}
+model.110_css = arima(data_TS,order=c(1,1,0),method='CSS')
+coeftest(model.110_css)
+```
+
+The autoregressive term in the ARIMA(1,1,0) model is not statistically significant according to both the ML and CSS estimation methods, as indicated by the p-values of approximately 0.4968 and 0.4955, respectively.
+
+#### ARIMA(2,1,0)
+
+```{r}
+model.210 = arima(data_TS,order=c(2,1,0),method='ML')
+coeftest(model.210)
+
+```
+
+```{r}
+model.210_css = arima(data_TS,order=c(2,1,0),method='CSS')
+coeftest(model.210_css)
+```
+
+\
+For both ML and CSS methods, the ARIMA(2,1,0) model suggests that the coefficient ar1 is not statistically significant (p \> 0.05), while ar2 remains highly significant (p \< 0.001). This implies that the second autoregressive term (ar2) is essential in capturing the dynamics of the time series data, whereas the first term (ar1) does not contribute significantly to the model's explanatory power.
+
+#### ARIMA(0,1,2)
+
+```{r}
+model.012 = arima(data_TS,order=c(0,1,2),method='ML')
+coeftest(model.012)
+
+```
+
+```{r}
+model.012_css= arima(data_TS,order=c(0,1,2),method='CSS')
+coeftest(model.012_css)
+```
+
+\
+For both ML and CSS methods, the ARIMA(0,1,2) model indicates that both ma1 and ma2 coefficients are statistically significant (p \< 0.05). This suggests that both lagged moving average terms (ma1 and ma2) contribute significantly to the model's explanatory power in capturing the dynamics of the time series data.
+
+#### ARIMA(1,1,1)
+
+```{r}
+model.111 = arima(data_TS,order=c(1,1,1),method='ML')
+coeftest(model.111)
+```
+
+```{r}
+model.111_css = arima(data_TS,order=c(1,1,1),method='CSS')
+coeftest(model.111_css)
+```
+
+For both ML and CSS methods, the ARIMA(1,1,1) model indicates that both ar1 and ma1 coefficients are statistically significant (p \< 0.05). This suggests that both the autoregressive term (ar1) and the moving average term (ma1) contribute significantly to the model's explanatory power in capturing the dynamics of the time series data.
+
+#### ARIMA(2,1,1)
+
+```{r}
+model.211 = arima(data_TS,order=c(2,1,1),method='ML')
+coeftest(model.211)
+```
+
+```{r}
+model.211_css = arima(data_TS,order=c(2,1,1),method='CSS')
+coeftest(model.211_css)
+```
+
+\
+For both ML and CSS methods, the ARIMA(2,1,1) model indicates that the coefficient for the second autoregressive term (ar2) and the moving average term (ma1) are statistically significant (p \< 0.05). However, the coefficient for the first autoregressive term (ar1) is not statistically significant (p \> 0.05).
+
+#### ARIMA(1,1,2)
+
+```{r}
+model.112 = arima(data_TS,order=c(1,1,2),method='ML')
+coeftest(model.112)
+```
+
+```{r}
+model.112_css = arima(data_TS,order=c(1,1,2),method='CSS')
+coeftest(model.112_css)
+```
+
+For both ML and CSS methods, the ARIMA(1,1,2) model suggests that the coefficient for the second moving average term (ma2) is statistically significant (p \< 0.05), indicating its importance in the model. However, the coefficients for the first autoregressive term (ar1) and the first moving average term (ma1) are not statistically significant (p \> 0.05).
+
+#### ARIMA(2,1,2)
+
+```{r}
+model.212 = arima(data_TS,order=c(2,1,2),method='ML')
+coeftest(model.212)
+```
+
+```{r}
+model.212_css = arima(data_TS,order=c(2,1,2),method='CSS')
+coeftest(model.212_css)
+```
+
+For both ML and CSS methods, the ARIMA(2,1,2) model indicates that the coefficients for the second autoregressive term (ar2) and the first moving average term (ma1) are not statistically significant (p \> 0.05). However, the significance of the first autoregressive term (ar1) and the second moving average term (ma2) is marginally significant, with p-values close to 0.05.
+
+#### ARIMA(1,1,3)
+
+```{r}
+model.113 = arima(data_TS,order=c(1,1,3),method='ML')
+coeftest(model.113)
+```
+
+```{r}
+model.113_css = arima(data_TS,order=c(1,1,3),method='CSS')
+coeftest(model.113_css)
+```
+
+For both ML and CSS methods, the ARIMA(1,1,3) model shows statistically significant coefficients for all terms (ar1, ma1, ma2, and ma3), with p-values significantly less than 0.05. This suggests that all parameters have a significant effect on the model's performance.
+
+#### ARIMA(2,1,3)
+
+```{r}
+model.213 = arima(data_TS,order=c(2,1,3),method='ML')
+coeftest(model.213)
+```
+
+```{r}
+model.213_css = arima(data_TS,order=c(2,1,3),method='CSS')
+coeftest(model.213_css)
+```
+
+For the ARIMA(2,1,3) model, both ML and CSS methods show statistically significant coefficients for ar1, ma1, and ma3 terms, with p-values less than 0.05, indicated by the '\*\*\*' symbol. However, the significance of ar2 and ma2 terms varies between the methods. In the ML method, ar2 and ma2 are not significant (p \> 0.05), while in the CSS method, they are marginally significant (0.01 \< p \< 0.05).
+
+Among the models evaluated using both the ML and CSS methods, the ***ARIMA(1,1,3)*** model appears to have the most consistently significant results across both methods. All coefficients (ar1, ma1, ma2, and ma3) are highly significant (p \< 0.001) in both ML and CSS methods, indicating strong statistical evidence for their importance in the model.
+
+### AIC and BIC Values for ARIMA Models to decide the best one within the subset.
+
+```{r}
+AIC(model.111, model.211, model.112, model.212, model.113, model.213, model.011, model.012, model.110, model.210)
+
+```
+
+```{r}
+BIC(model.111, model.211, model.112, model.212, model.113, model.213, model.011, model.012, model.110, model.210)
+```
+
+```{r}
+sort.score <- function(x, score = c("bic", "aic")){
+if (score == "aic"){
+  x[with(x, order(AIC)),]
+} else if (score == "bic") {
+  x[with(x, order(BIC)),]
+} else {
+warning('score = "x" only accepts valid arguments ("aic","bic")')
+  }
+}
+```
+
+```{r}
+sort.score(AIC(model.111, model.211, model.112, model.212, model.113, model.213, model.011, model.012, model.110, model.210), score = "aic")
+```
+
+A lower AIC value denotes a better model fit. We observe from the table that smallest AIC value is from the model **ARIMA(1,1,3)** with value = -354.62
+
+```{r}
+sort.score(BIC(model.111, model.211, model.112, model.212, model.113, model.213, model.011, model.012, model.110, model.210), score = "bic")
+```
+
+Again a lower BIC value shows a model with a better fit. Comparing the BIC we see that model **ARIMA(210)** has the smallest BIC value with value= -343.81
+
+We know want to get other error measures.
+
+```{r}
+library(forecast)
+model.111A = Arima(data_TS,order=c(1,1,1),method='ML')
+model.211A = Arima(data_TS,order=c(2,1,1),method='ML')
+model.112A = Arima(data_TS,order=c(1,1,2),method='ML')
+model.212A = Arima(data_TS,order=c(2,1,2),method='ML')
+model.113A = Arima(data_TS,order=c(1,1,3),method='ML')
+model.213A = Arima(data_TS,order=c(2,1,3),method='ML')
+model.011A = Arima(data_TS,order=c(0,1,1),method='ML')
+model.012A = Arima(data_TS,order=c(0,1,2),method='ML')
+model.110A = Arima(data_TS,order=c(1,1,0),method='ML')
+model.210A = Arima(data_TS,order=c(2,1,0),method='ML')
+
+```
+
+```{r}
+# Extract accuracy metrics for each model
+Smodel.111A <- accuracy(model.111A)[1:7]
+Smodel.211A <- accuracy(model.211A)[1:7]
+Smodel.112A <- accuracy(model.112A)[1:7]
+Smodel.212A <- accuracy(model.212A)[1:7]
+Smodel.113A <- accuracy(model.113A)[1:7]
+Smodel.213A <- accuracy(model.213A)[1:7]
+Smodel.011A <- accuracy(model.011A)[1:7]
+Smodel.012A <- accuracy(model.012A)[1:7]
+Smodel.110A <- accuracy(model.110A)[1:7]
+Smodel.210A <- accuracy(model.210A)[1:7]
+
+# Create a data frame to store the accuracy metrics
+df.Smodels <- data.frame(
+  rbind(Smodel.111A, Smodel.211A, Smodel.112A,
+        Smodel.212A, Smodel.113A, Smodel.213A,
+        Smodel.011A, Smodel.012A, Smodel.110A, 
+        Smodel.210A)
+)
+
+# Assign column names
+colnames(df.Smodels) <- c("ME", "RMSE", "MAE", "MPE", "MAPE", "MASE", "ACF1")
+
+# Define row names
+row_names <- c("ARIMA(1,1,1)", "ARIMA(2,1,1)", "ARIMA(1,1,2)",
+               "ARIMA(2,1,2)", "ARIMA(1,1,3)", "ARIMA(2,1,3)",
+               "ARIMA(0,1,1)", "ARIMA(0,1,2)", "ARIMA(1,1,0)",
+               "ARIMA(2,1,0)")
+df.Smodels
+```
+
+The best model chosen from the above table is Model: **ARIMA(1,1,3)**
+
+-   RMSE: 0.08393859
+
+-   MAE: 0.06372192
+
+-   MASE: 0.8868779
+
+-   ACF1: -0.023587243
+
+Looking at RMSE, MAE, and MASE, lower values are generally better. Comparing these metrics, "Smodel.113A" has slightly lower RMSE and MAE, indicating slightly better performance in terms of predicting the actual values than the other models. ARIMA(2,1,1) comes a close second.
+
+**Thus out of all the Tests conducted ARIMA(1,1,3) is the best model for our time series.**
+
+# CONCLUSION
+
+In this assignment, our primary objective was to conduct a comprehensive analysis of the Global Land Temperature Anomalies dataset spanning from 1850 to 2023 against a reference period of 1901-2000. Our aim was to develop ARIMA models for forecasting future temperature variations. We began by importing and preprocessing the data, followed by exploring temporal patterns through descriptive analysis. Utilizing Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) analysis, we proposed potential ARIMA models. Additionally, we employed unit root tests, normality tests, and techniques like Box-Cox transformation and differencing to ensure the suitability of our models. After conducting thorough tests, our best model was identified as ARIMA (1,1,3). This model was selected based on rigorous analysis, model specification, parameter estimation, and model evaluation using diagnostic tools like AIC and BIC. Through rigorous analysis and model selection, we aimed to provide reliable forecasts for future temperature anomalies.
+
+# REFERENCES
+
+1.  Lecture Notes
+
+2.  quillbot.com
+
+3.  <https://chat.openai.com/>
+
+4.  <https://bookdown.org/JakeEsprabens/431-Time-Series/introduction-to-time-series.html#components-of-time-series>
