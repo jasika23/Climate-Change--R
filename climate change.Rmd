@@ -1,11 +1,4 @@
----
-title: "Time Series Assignment 2"
-author: "Jasika Verma"
-date: "2024-04-30"
-output:
-  pdf_document: default
-  html_document: default
----
+
 
 ```{r setup, include=FALSE}
 library(readr)
@@ -27,7 +20,7 @@ This assignment focuses on the analysis of yearly Global Land Temperature Anomal
 
 ## **AIM**
 
-The primary aim of this assignment is to conduct a comprehensive analysis of the Global Land Temperature Anomalies dataset and develop ARIMA models for forecasting future temperature variations. Specific objectives include:
+The primary aim is to conduct a comprehensive analysis of the Global Land Temperature Anomalies dataset and develop ARIMA models for forecasting future temperature variations. Specific objectives include:
 
 1.  **Descriptive Analysis**: Conduct descriptive analysis of the temperature anomalies dataset to characterize its temporal patterns, trends, and variability.
 
@@ -77,11 +70,6 @@ The primary aim of this assignment is to conduct a comprehensive analysis of the
 
     -   The **`armasubsets()`** function is used to explore different ARIMA model specifications based on Akaike Information Criterion (AIC) and Bayesian Information Criterion (BIC) values
 
-### Use of Artificial- Intelligence
-
-Artifical tools like chatgpt and quillbot were used to help me capture my observations and report them using gramatically correct English in a formal manner.
-
-They also helped me understand some testings like the ML and CSS for ARIMA model selection.
 
 ### READING THE DATA
 
@@ -580,14 +568,5 @@ Looking at RMSE, MAE, and MASE, lower values are generally better. Comparing the
 
 # CONCLUSION
 
-In this assignment, our primary objective was to conduct a comprehensive analysis of the Global Land Temperature Anomalies dataset spanning from 1850 to 2023 against a reference period of 1901-2000. Our aim was to develop ARIMA models for forecasting future temperature variations. We began by importing and preprocessing the data, followed by exploring temporal patterns through descriptive analysis. Utilizing Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) analysis, we proposed potential ARIMA models. Additionally, we employed unit root tests, normality tests, and techniques like Box-Cox transformation and differencing to ensure the suitability of our models. After conducting thorough tests, our best model was identified as ARIMA (1,1,3). This model was selected based on rigorous analysis, model specification, parameter estimation, and model evaluation using diagnostic tools like AIC and BIC. Through rigorous analysis and model selection, we aimed to provide reliable forecasts for future temperature anomalies.
+Our primary objective was to conduct a comprehensive analysis of the Global Land Temperature Anomalies dataset spanning from 1850 to 2023 against a reference period of 1901-2000. Our aim was to develop ARIMA models for forecasting future temperature variations. We began by importing and preprocessing the data, followed by exploring temporal patterns through descriptive analysis. Utilizing Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) analysis, we proposed potential ARIMA models. Additionally, we employed unit root tests, normality tests, and techniques like Box-Cox transformation and differencing to ensure the suitability of our models. After conducting thorough tests, our best model was identified as ARIMA (1,1,3). This model was selected based on rigorous analysis, model specification, parameter estimation, and model evaluation using diagnostic tools like AIC and BIC. Through rigorous analysis and model selection, we aimed to provide reliable forecasts for future temperature anomalies.
 
-# REFERENCES
-
-1.  Lecture Notes
-
-2.  quillbot.com
-
-3.  <https://chat.openai.com/>
-
-4.  <https://bookdown.org/JakeEsprabens/431-Time-Series/introduction-to-time-series.html#components-of-time-series>
